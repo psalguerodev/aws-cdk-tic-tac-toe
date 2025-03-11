@@ -1,11 +1,27 @@
-import { App, Stack, StackProps } from 'aws-cdk-lib';
+import { App, Stack, StackProps, CfnOutput } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
+import { WebsiteConstruct } from './constructs/website-construct';
 
 export class MyStack extends Stack {
   constructor(scope: Construct, id: string, props: StackProps = {}) {
     super(scope, id, props);
 
-    // define resources here...
+    // Crear el sitio web con S3 y CloudFront
+    const website = new WebsiteConstruct(this, 'WebsiteConstruct', {
+      bucketName: `${id}-website-bucket`,
+      websitePath: '../../frontend/dist',
+    });
+
+    // Outputs a nivel de stack
+    new CfnOutput(this, 'WebsiteURLStack', {
+      value: website.websiteUrl,
+      description: 'URL del sitio web (Stack)',
+    });
+
+    new CfnOutput(this, 'BucketNameStack', {
+      value: website.bucketName,
+      description: 'Nombre del bucket S3 (Stack)',
+    });
   }
 }
 
