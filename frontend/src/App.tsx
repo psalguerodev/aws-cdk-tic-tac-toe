@@ -2,7 +2,7 @@ import { ChakraProvider, Container } from "@chakra-ui/react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Home from "./pages/Home";
-
+import Us from "./pages/Us";
 const queryClient = new QueryClient();
 
 function App() {
@@ -13,6 +13,7 @@ function App() {
           <Container maxW="100vw" p={0} centerContent>
             <Routes>
               <Route path="/" element={<Home />} />
+              <Route path="/us" element={<Us />} />
             </Routes>
           </Container>
         </Router>

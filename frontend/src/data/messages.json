@@ -1,0 +1,22 @@
+{
+  "scoreMessages": [
+    {
+      "minScore": 0,
+      "maxScore": 50,
+      "message": "Estás comenzando tu viaje en el mundo de la inteligencia emocional. Recuerda que el autoconocimiento y la empatía son habilidades que se pueden desarrollar con práctica y dedicación. Te animamos a seguir aprendiendo y explorando tus emociones y las de los demás.",
+      "color": "blue.500"
+    },
+    {
+      "minScore": 50,
+      "maxScore": 70,
+      "message": "Vas por buen camino en tu desarrollo emocional. Muestras una base sólida en el manejo de emociones y relaciones interpersonales. Continúa trabajando en fortalecer estas habilidades para alcanzar un mayor nivel de inteligencia emocional.",
+      "color": "yellow.500"
+    },
+    {
+      "minScore": 70,
+      "maxScore": 100,
+      "message": "¡Excelente nivel de inteligencia emocional! Demuestras una gran capacidad para entender y manejar tus emociones, así como para empatizar con los demás. Estás en una posición ideal para ayudar a otros en su desarrollo emocional y ser un ejemplo positivo en tus relaciones personales y profesionales.",
+      "color": "green.500"
+    }
+  ]
+}

@@ -1,0 +1,134 @@
+{
+  "questions": [
+    {
+      "id": 1,
+      "type": "single",
+      "question": "Tu pareja ha tenido un día difícil en el trabajo y llega a casa de mal humor, respondiendo cortante a tus preguntas. ¿Cuál sería una respuesta que demuestre amor incondicional?",
+      "options": [
+        "Responderle de la misma manera para que aprenda",
+        "Darle espacio y mostrar comprensión, ofreciendo apoyo cuando lo necesite",
+        "Ignorarle hasta que se le pase el mal humor",
+        "Exigirle que te trate mejor inmediatamente"
+      ],
+      "correctAnswer": 1,
+      "explanation": "El amor incondicional implica comprender que todos tenemos momentos difíciles y mostrar apoyo incluso cuando la otra persona no está en su mejor momento."
+    },
+    {
+      "id": 2,
+      "type": "multiple",
+      "question": "Durante una reunión de trabajo, un colega presenta una idea que tú habías propuesto hace semanas pero que fue ignorada. ¿Cuáles de las siguientes respuestas demuestran inteligencia emocional?",
+      "options": [
+        "Reconocer y manejar tu frustración inicial antes de actuar",
+        "Abordar el tema en privado con tu colega de manera respetuosa",
+        "Expresar públicamente tu enojo durante la reunión",
+        "Ignorar la situación y no volver a compartir ideas"
+      ],
+      "correctAnswer": [0, 1],
+      "explanation": "La inteligencia emocional implica manejar nuestras emociones y comunicarnos asertivamente de manera privada y respetuosa."
+    },
+    {
+      "id": 3,
+      "type": "single",
+      "question": "Has cometido un error importante en un proyecto y te sientes muy frustrado contigo mismo. ¿Qué enfoque representa mejor la autocompasión?",
+      "options": [
+        "Castigarte trabajando horas extra sin descanso",
+        "Reconocer que los errores son parte del aprendizaje y buscar soluciones constructivas",
+        "Ocultar el error para que nadie lo note",
+        "Compararte constantemente con otros que no cometen errores"
+      ],
+      "correctAnswer": 1,
+      "explanation": "La autocompasión implica tratarnos con amabilidad y entender que los errores son oportunidades de aprendizaje y crecimiento."
+    },
+    {
+      "id": 4,
+      "type": "multiple",
+      "question": "Tu mejor amigo(a) está pasando por un divorcio difícil. ¿Cuáles de las siguientes acciones demuestran una relación emocionalmente saludable?",
+      "options": [
+        "Escuchar sin juzgar cuando necesite desahogarse",
+        "Respetar sus decisiones aunque no estés de acuerdo",
+        "Darle consejos constantes sobre qué debería hacer",
+        "Contarle experiencias similares de otros amigos para que se sienta mejor"
+      ],
+      "correctAnswer": [0, 1],
+      "explanation": "Una relación emocionalmente saludable se basa en la escucha activa sin juicios y el respeto por las decisiones del otro."
+    },
+    {
+      "id": 5,
+      "type": "single",
+      "question": "Un familiar cercano te ha herido profundamente con sus acciones. Después de un tiempo, muestra arrepentimiento sincero. ¿Qué respuesta refleja mejor el papel del perdón?",
+      "options": [
+        "Mantener el rencor para protegerte",
+        "Fingir que nada pasó para mantener la paz",
+        "Perdonar y trabajar en reconstruir la relación, estableciendo límites saludables",
+        "Perdonar pero mantener distancia permanente"
+      ],
+      "correctAnswer": 2,
+      "explanation": "El perdón verdadero implica un proceso de sanación que incluye establecer límites saludables mientras se da la oportunidad de reconstruir la relación."
+    },
+    {
+      "id": 6,
+      "type": "multiple",
+      "question": "Has tenido una semana muy estresante en el trabajo. ¿Cuáles de las siguientes acciones son más efectivas para el autocuidado emocional?",
+      "options": [
+        "Dedicar tiempo a una actividad que te relaje",
+        "Hablar con un amigo o terapeuta sobre tus preocupaciones",
+        "Ignorar el estrés y seguir trabajando más horas",
+        "Usar las redes sociales para distraerte"
+      ],
+      "correctAnswer": [0, 1],
+      "explanation": "El autocuidado emocional efectivo implica dedicar tiempo a actividades relajantes y buscar apoyo emocional cuando lo necesitamos."
+    },
+    {
+      "id": 7,
+      "type": "single",
+      "question": "Has perdido una oportunidad laboral importante que realmente deseabas. ¿Qué respuesta demuestra mayor resiliencia emocional?",
+      "options": [
+        "Evitar buscar más oportunidades por miedo al rechazo",
+        "Ver la experiencia como aprendizaje y seguir buscando nuevas oportunidades",
+        "Culpar a otros por no haber conseguido el trabajo",
+        "Negar que te importaba realmente esa oportunidad"
+      ],
+      "correctAnswer": 1,
+      "explanation": "La resiliencia emocional implica la capacidad de aprender de las experiencias difíciles y seguir adelante con una actitud constructiva."
+    },
+    {
+      "id": 8,
+      "type": "multiple",
+      "question": "Un compañero de trabajo está visiblemente afectado por problemas personales. ¿Qué acciones demuestran empatía?",
+      "options": [
+        "Ofrecer un espacio seguro para hablar si lo necesita",
+        "Mostrar comprensión sin minimizar sus sentimientos",
+        "Contarle a otros compañeros sobre su situación",
+        "Decirle que no es para tanto y que hay problemas peores"
+      ],
+      "correctAnswer": [0, 1],
+      "explanation": "La empatía se demuestra ofreciendo apoyo respetuoso y validando los sentimientos de la otra persona sin minimizarlos."
+    },
+    {
+      "id": 9,
+      "type": "single",
+      "question": "Tu pareja y tú tienen diferentes opiniones sobre un gasto importante. ¿Cuál es la mejor manera de manejar este conflicto?",
+      "options": [
+        "Imponer tu punto de vista porque crees tener razón",
+        "Evitar hablar del tema para no discutir",
+        "Dialogar abiertamente, escuchando ambas perspectivas y buscando un acuerdo mutuo",
+        "Ceder siempre para mantener la paz"
+      ],
+      "correctAnswer": 2,
+      "explanation": "La comunicación asertiva y la búsqueda de soluciones que consideren ambas perspectivas es la mejor manera de resolver conflictos."
+    },
+    {
+      "id": 10,
+      "type": "multiple",
+      "question": "En una relación de larga duración, ¿qué acciones son más importantes para mantenerla saludable?",
+      "options": [
+        "Mantener la confianza siendo honestos y transparentes",
+        "Dedicar tiempo de calidad para fortalecer el vínculo",
+        "Evitar todo tipo de desacuerdos",
+        "Hacer siempre lo que la otra persona quiere"
+      ],
+      "correctAnswer": [0, 1],
+      "explanation": "Una relación saludable y duradera se basa en la honestidad, la confianza y el tiempo de calidad compartido."
+    }
+  ]
+}
