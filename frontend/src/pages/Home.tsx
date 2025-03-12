@@ -541,24 +541,6 @@ const Home = () => {
 
   return (
     <Flex w="100vw" h="100vh" align="center" justify="center">
-      {showConfetti && (
-        <ReactConfetti
-          numberOfPieces={500}
-          recycle={false}
-          gravity={0.3}
-          initialVelocityY={30}
-          initialVelocityX={15}
-          confettiSource={{
-            x: window.innerWidth / 2,
-            y: window.innerHeight / 2,
-            w: 0,
-            h: 0,
-          }}
-          tweenDuration={200}
-          width={window.innerWidth}
-          height={window.innerHeight}
-        />
-      )}
       {showWinnerMessage && (
         <Box
           position="fixed"
@@ -572,7 +554,30 @@ const Home = () => {
           alignItems="center"
           justifyContent="center"
         >
-          <VStack animation={`${fadeIn} 0.5s ease-out`} spacing={4}>
+          {showConfetti && (
+            <ReactConfetti
+              numberOfPieces={500}
+              recycle={false}
+              gravity={0.3}
+              initialVelocityY={30}
+              initialVelocityX={15}
+              confettiSource={{
+                x: window.innerWidth / 2,
+                y: window.innerHeight / 2,
+                w: 0,
+                h: 0,
+              }}
+              tweenDuration={200}
+              width={window.innerWidth}
+              height={window.innerHeight}
+              style={{ position: "fixed", top: 0, left: 0, zIndex: 1001 }}
+            />
+          )}
+          <VStack
+            animation={`${fadeIn} 0.5s ease-out`}
+            spacing={4}
+            zIndex={1002}
+          >
             <Text
               fontSize="6xl"
               fontWeight="extrabold"
