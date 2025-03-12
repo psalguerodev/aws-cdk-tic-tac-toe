@@ -1,10 +1,16 @@
 import { App, Stack, StackProps, CfnOutput } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
+import { BackendConstruct } from './constructs/backend-construct';
 import { WebsiteConstruct } from './constructs/website-construct';
 
 export class MyStack extends Stack {
   constructor(scope: Construct, id: string, props: StackProps = {}) {
     super(scope, id, props);
+
+    // Crear el backend con API Gateway, Lambda y DynamoDB
+    const backend = new BackendConstruct(this, 'BackendConstruct', {
+      tableName: `${id}-games-table`,
+    });
 
     // Crear el sitio web con S3 y CloudFront
     const website = new WebsiteConstruct(this, 'WebsiteConstruct', {
@@ -21,6 +27,16 @@ export class MyStack extends Stack {
     new CfnOutput(this, 'BucketNameStack', {
       value: website.bucketName,
       description: 'Nombre del bucket S3 (Stack)',
+    });
+
+    new CfnOutput(this, 'ApiUrlStack', {
+      value: backend.apiUrl,
+      description: 'URL de la API Gateway',
+    });
+
+    new CfnOutput(this, 'TableNameStack', {
+      value: backend.table.tableName,
+      description: 'Nombre de la tabla DynamoDB',
     });
   }
 }

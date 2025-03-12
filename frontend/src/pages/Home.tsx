@@ -1,33 +1,55 @@
+import { ChevronLeftIcon, ChevronRightIcon } from "@chakra-ui/icons";
 import {
+  Badge,
   Box,
   Button,
   Card,
   CardBody,
   CardHeader,
+  Flex,
+  FormControl,
+  FormErrorMessage,
+  FormLabel,
   Grid,
   Heading,
-  Input,
-  Text,
-  VStack,
-  useToast,
   HStack,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  useDisclosure,
-  Flex,
-  Select,
-  Switch,
-  FormControl,
-  FormLabel,
-  FormErrorMessage,
+  IconButton,
+  Input,
   keyframes,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  NumberDecrementStepper,
+  NumberIncrementStepper,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  Select,
+  Spinner,
+  Switch,
+  Tab,
+  Table,
+  TableContainer,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
+  Tbody,
+  Td,
+  Text,
+  Th,
+  Thead,
+  Tr,
+  useDisclosure,
+  useToast,
+  VStack,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import ReactConfetti from "react-confetti";
+import { FaTrophy } from "react-icons/fa";
 
 type Player = "X" | "O" | null;
 type Difficulty = "fácil" | "medio" | "difícil";
@@ -37,11 +59,28 @@ interface PlayerStats {
   wins: number;
 }
 
+interface GameResult {
+  playerX: PlayerStats;
+  playerO: PlayerStats;
+  winner: Player;
+  date: string;
+  vsComputer: boolean;
+  difficulty?: Difficulty;
+}
+
 interface GameSettings {
   playerX: PlayerStats;
   playerO: PlayerStats;
   vsComputer: boolean;
   difficulty: Difficulty;
+}
+
+interface ApiGameStats {
+  games: GameResult[];
+  totalGames: number;
+  playerStats: {
+    [key: string]: PlayerStats;
+  };
 }
 
 const fadeIn = keyframes`
@@ -54,6 +93,8 @@ const shine = keyframes`
   0% { background-position: -100% }
   100% { background-position: 200% }
 `;
+
+const API_URL = "https://8lrj00xq0j.execute-api.us-east-1.amazonaws.com/prod";
 
 const Home = () => {
   const [board, setBoard] = useState<Player[]>(Array(9).fill(null));
@@ -68,6 +109,16 @@ const Home = () => {
   const [winnerName, setWinnerName] = useState("");
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+  const [stats, setStats] = useState<ApiGameStats | null>(null);
+  const [isLoadingStats, setIsLoadingStats] = useState(false);
+  const {
+    isOpen: isStatsOpen,
+    onOpen: onStatsOpen,
+    onClose: onStatsClose,
+  } = useDisclosure();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
 
   useEffect(() => {
     const savedSettings = localStorage.getItem("tictactoeSettings");
@@ -80,7 +131,87 @@ const Home = () => {
     } else {
       onOpen();
     }
+
+    // Cargar estadísticas al inicio
+    fetchStats();
   }, []);
+
+  const fetchStats = async () => {
+    try {
+      setIsLoadingStats(true);
+      const response = await fetch(`${API_URL}/stats`);
+      if (!response.ok) throw new Error("Error al obtener estadísticas");
+      const data: ApiGameStats = await response.json();
+      setStats(data);
+
+      // Actualizar estadísticas locales si hay datos
+      if (data.playerStats) {
+        const currentX = playerX.name;
+        const currentO = playerO.name;
+        if (currentX && data.playerStats[currentX]) {
+          setPlayerX((prev) => ({
+            ...prev,
+            wins: data.playerStats[currentX].wins,
+          }));
+        }
+        if (currentO && data.playerStats[currentO]) {
+          setPlayerO((prev) => ({
+            ...prev,
+            wins: data.playerStats[currentO].wins,
+          }));
+        }
+      }
+    } catch (error) {
+      console.error("Error al obtener estadísticas:", error);
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar las estadísticas",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    } finally {
+      setIsLoadingStats(false);
+    }
+  };
+
+  const saveGameToApi = async (winner: Player) => {
+    try {
+      setIsLoading(true);
+      const gameData = {
+        playerX,
+        playerO,
+        winner: winner,
+        vsComputer,
+        difficulty: vsComputer ? difficulty : undefined,
+        date: new Date().toISOString(),
+      };
+
+      const response = await fetch(`${API_URL}/games`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(gameData),
+      });
+
+      if (!response.ok) throw new Error("Error al guardar el juego");
+
+      // Actualizar estadísticas después de guardar
+      await fetchStats();
+    } catch (error) {
+      console.error("Error al guardar el juego:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo guardar el resultado del juego",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const saveSettings = (
     newPlayerX: PlayerStats,
@@ -225,9 +356,8 @@ const Home = () => {
     if (board[index] || calculateWinner(board)) return;
 
     const newBoard = board.slice();
-    newBoard[index] = "X";
+    newBoard[index] = isXNext ? "X" : "O";
     setBoard(newBoard);
-    setIsXNext(false);
 
     const winner = calculateWinner(newBoard);
     if (winner || !newBoard.includes(null)) {
@@ -235,7 +365,7 @@ const Home = () => {
       return;
     }
 
-    if (vsComputer) {
+    if (vsComputer && isXNext) {
       // Turno de la computadora
       setTimeout(() => {
         const computerMove = getComputerMove(newBoard);
@@ -250,11 +380,11 @@ const Home = () => {
         }
       }, 500); // Pequeño retraso para mejor UX
     } else {
-      setIsXNext(true);
+      setIsXNext(!isXNext);
     }
   };
 
-  const handleGameEnd = (winner: Player, currentBoard: Player[]) => {
+  const handleGameEnd = async (winner: Player, currentBoard: Player[]) => {
     if (winner) {
       const currentPlayer = winner === "X" ? playerX : playerO;
       const updatedPlayer = {
@@ -275,6 +405,9 @@ const Home = () => {
       setWinnerName(currentPlayer.name);
       setShowWinnerMessage(true);
 
+      // Guardar el juego en la API
+      await saveGameToApi(winner);
+
       setTimeout(() => {
         setShowConfetti(false);
         setShowWinnerMessage(false);
@@ -288,6 +421,9 @@ const Home = () => {
         isClosable: true,
       });
     } else if (!currentBoard.includes(null)) {
+      // Guardar empate en la API
+      await saveGameToApi(null);
+
       toast({
         title: "¡Juego terminado!",
         description: "¡Empate!",
@@ -299,20 +435,19 @@ const Home = () => {
   };
 
   const resetGame = () => {
-    setBoard(Array(9).fill(null));
+    const newBoard = Array(9).fill(null);
+    setBoard(newBoard);
+
     if (vsComputer) {
-      // Al reiniciar, también determinar aleatoriamente quién empieza
       const computerStarts = Math.random() < 0.5;
       setIsXNext(!computerStarts);
 
       if (computerStarts) {
-        setTimeout(() => {
-          const newBoard = Array(9).fill(null);
-          const computerMove = getComputerMove(newBoard);
-          newBoard[computerMove] = "O";
-          setBoard(newBoard);
-          setIsXNext(true);
-        }, 500);
+        const computerMove = getComputerMove(newBoard);
+        const updatedBoard = [...newBoard];
+        updatedBoard[computerMove] = "O";
+        setBoard(updatedBoard);
+        setIsXNext(true);
       }
     } else {
       setIsXNext(true);
@@ -347,20 +482,16 @@ const Home = () => {
     const computerPlayer = { name: "Computadora", wins: 0 };
     if (vsComputer) {
       setPlayerO(computerPlayer);
-      // Determinar aleatoriamente quién empieza
       const computerStarts = Math.random() < 0.5;
       setIsXNext(!computerStarts);
 
+      const newBoard = Array(9).fill(null);
       if (computerStarts) {
-        // Si la computadora empieza, hacer su movimiento después de un pequeño retraso
-        setTimeout(() => {
-          const newBoard = [...board];
-          const computerMove = getComputerMove(newBoard);
-          newBoard[computerMove] = "O";
-          setBoard(newBoard);
-          setIsXNext(true);
-        }, 500);
+        const computerMove = getComputerMove(newBoard);
+        newBoard[computerMove] = "O";
+        setIsXNext(true);
       }
+      setBoard(newBoard);
     }
 
     saveSettings(
@@ -370,14 +501,13 @@ const Home = () => {
       difficulty
     );
     onClose();
-    resetGame();
   };
 
   const renderSquare = (index: number) => (
     <Button
-      h="100px"
-      w="100px"
-      fontSize="5xl"
+      h="80px"
+      w="80px"
+      fontSize="4xl"
       onClick={() => handleClick(index)}
       bg="white"
       _hover={{ bg: "gray.100" }}
@@ -395,6 +525,19 @@ const Home = () => {
     : board.includes(null)
     ? `Siguiente jugador: ${isXNext ? playerX.name : playerO.name}`
     : "Empate";
+
+  const formatDateTime = (date: string) => {
+    const dateObj = new Date(date);
+    // Ajustar a zona horaria de Lima (UTC-5)
+    const limaDate = new Date(dateObj.getTime() - 5 * 60 * 60 * 1000);
+
+    const day = limaDate.getDate().toString().padStart(2, "0");
+    const month = (limaDate.getMonth() + 1).toString().padStart(2, "0");
+    const hours = limaDate.getHours().toString().padStart(2, "0");
+    const minutes = limaDate.getMinutes().toString().padStart(2, "0");
+
+    return `${day}/${month} ${hours}:${minutes}`;
+  };
 
   return (
     <Flex w="100vw" h="100vh" align="center" justify="center">
@@ -453,29 +596,53 @@ const Home = () => {
           </VStack>
         </Box>
       )}
-      <Card maxW="600px" w="90%" mx="auto" boxShadow="xl">
-        <CardHeader>
-          <Heading size="xl" textAlign="center">
+      <Card maxW="500px" w="90%" mx="auto" boxShadow="xl">
+        <CardHeader py={2}>
+          <Heading size="lg" textAlign="center">
             Tic Tac Toe
           </Heading>
         </CardHeader>
         <CardBody>
-          <VStack spacing={6}>
+          <VStack spacing={3}>
+            {isLoading && (
+              <Text color="gray.500" fontSize="sm">
+                Guardando resultado...
+              </Text>
+            )}
             <HStack spacing={8} justify="center">
-              <VStack>
-                <Text fontWeight="bold">{playerX.name} (X)</Text>
-                <Text>Victorias: {playerX.wins}</Text>
+              <VStack spacing={0}>
+                <Text fontWeight="bold" fontSize="md">
+                  {playerX.name} (X)
+                </Text>
+                <Text fontSize="sm">Victorias: {playerX.wins}</Text>
               </VStack>
-              <VStack>
-                <Text fontWeight="bold">{playerO.name} (O)</Text>
-                <Text>Victorias: {playerO.wins}</Text>
+              <VStack spacing={0}>
+                <Text fontWeight="bold" fontSize="md">
+                  {playerO.name} (O)
+                </Text>
+                <Text fontSize="sm">Victorias: {playerO.wins}</Text>
               </VStack>
             </HStack>
 
+            <Button
+              size="sm"
+              colorScheme="purple"
+              variant="outline"
+              onClick={() => {
+                fetchStats();
+                onStatsOpen();
+              }}
+            >
+              Ver Ranking
+            </Button>
+
             {vsComputer && (
-              <FormControl w="200px">
-                <FormLabel textAlign="center">Nivel de dificultad</FormLabel>
+              <FormControl w="180px">
+                <FormLabel textAlign="center" fontSize="sm" mb={1}>
+                  Nivel de dificultad
+                </FormLabel>
                 <Select
+                  size="sm"
                   value={difficulty}
                   onChange={(e) => {
                     setDifficulty(e.target.value as Difficulty);
@@ -511,11 +678,11 @@ const Home = () => {
               </FormControl>
             )}
 
-            <Text fontSize="xl" fontWeight="bold">
+            <Text fontSize="lg" fontWeight="bold">
               {status}
             </Text>
             <Box>
-              <Grid templateColumns="repeat(3, 1fr)" gap={2}>
+              <Grid templateColumns="repeat(3, 1fr)" gap={1}>
                 {Array(9)
                   .fill(null)
                   .map((_, i) => (
@@ -523,12 +690,12 @@ const Home = () => {
                   ))}
               </Grid>
             </Box>
-            <VStack spacing={4}>
-              <Button colorScheme="blue" onClick={resetGame} size="lg">
+            <VStack spacing={2}>
+              <Button colorScheme="blue" onClick={resetGame} size="md">
                 Reiniciar Juego
               </Button>
               {vsComputer && (
-                <Text fontSize="sm" color="gray.600">
+                <Text fontSize="xs" color="gray.600">
                   Nivel actual:{" "}
                   {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
                 </Text>
@@ -548,7 +715,7 @@ const Home = () => {
                   resetGame();
                   onOpen();
                 }}
-                fontSize="sm"
+                fontSize="xs"
               >
                 Reiniciar juego completo
               </Text>
@@ -644,6 +811,232 @@ const Home = () => {
               }
             >
               Comenzar Juego
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      <Modal isOpen={isStatsOpen} onClose={onStatsClose} size="xl">
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Estadísticas del Juego</ModalHeader>
+          <ModalBody>
+            {isLoadingStats ? (
+              <Flex justify="center" align="center" h="200px">
+                <Spinner size="xl" color="purple.500" />
+              </Flex>
+            ) : stats ? (
+              <Tabs isFitted variant="enclosed">
+                <TabList mb="1em">
+                  <Tab>Ranking</Tab>
+                  <Tab>Historial</Tab>
+                </TabList>
+                <TabPanels>
+                  <TabPanel>
+                    <VStack spacing={4} align="stretch">
+                      <HStack justify="space-between">
+                        <Text fontWeight="bold">
+                          Total de partidas: {stats.totalGames}
+                        </Text>
+                      </HStack>
+                      <TableContainer>
+                        <Table variant="simple" size="sm">
+                          <Thead>
+                            <Tr>
+                              <Th width="15%">Posición</Th>
+                              <Th width="45%">Jugador</Th>
+                              <Th width="20%" isNumeric>
+                                Victorias
+                              </Th>
+                              <Th width="20%">Estado</Th>
+                            </Tr>
+                          </Thead>
+                          <Tbody>
+                            {Object.entries(stats.playerStats)
+                              .sort(([, a], [, b]) => b.wins - a.wins)
+                              .map(([name, stats], index) => (
+                                <Tr key={name}>
+                                  <Td>
+                                    <HStack spacing={2}>
+                                      <Text>{index + 1}º</Text>
+                                      {index < 3 && (
+                                        <Box
+                                          color={
+                                            index === 0
+                                              ? "yellow.400"
+                                              : index === 1
+                                              ? "gray.400"
+                                              : "orange.400"
+                                          }
+                                        >
+                                          <FaTrophy size="1.2em" />
+                                        </Box>
+                                      )}
+                                    </HStack>
+                                  </Td>
+                                  <Td>
+                                    <Text isTruncated maxW="100%">
+                                      {name}{" "}
+                                      {name === "Computadora" && (
+                                        <Badge colorScheme="purple">IA</Badge>
+                                      )}
+                                    </Text>
+                                  </Td>
+                                  <Td isNumeric>{stats.wins}</Td>
+                                  <Td>
+                                    {name === playerX.name ||
+                                    name === playerO.name ? (
+                                      <Badge colorScheme="green">
+                                        En juego
+                                      </Badge>
+                                    ) : null}
+                                  </Td>
+                                </Tr>
+                              ))}
+                          </Tbody>
+                        </Table>
+                      </TableContainer>
+                    </VStack>
+                  </TabPanel>
+                  <TabPanel>
+                    <VStack spacing={4} align="stretch">
+                      <TableContainer>
+                        <Table variant="simple" size="sm">
+                          <Thead>
+                            <Tr>
+                              <Th width="20%">Fecha</Th>
+                              <Th width="20%">Jugador X</Th>
+                              <Th width="20%">Jugador O</Th>
+                              <Th width="20%">Ganador</Th>
+                              <Th width="20%">Modo</Th>
+                            </Tr>
+                          </Thead>
+                          <Tbody>
+                            {stats.games
+                              .sort(
+                                (a, b) =>
+                                  new Date(b.date).getTime() -
+                                  new Date(a.date).getTime()
+                              )
+                              .slice(
+                                (currentPage - 1) * itemsPerPage,
+                                currentPage * itemsPerPage
+                              )
+                              .map((game, index) => (
+                                <Tr key={index}>
+                                  <Td>
+                                    <Text fontSize="sm" noOfLines={2}>
+                                      {formatDateTime(game.date)}
+                                    </Text>
+                                  </Td>
+                                  <Td>
+                                    <Text fontSize="sm" noOfLines={1}>
+                                      {game.playerX.name}
+                                    </Text>
+                                  </Td>
+                                  <Td>
+                                    <Text fontSize="sm" noOfLines={1}>
+                                      {game.playerO.name}{" "}
+                                      {game.vsComputer && (
+                                        <Badge colorScheme="purple">IA</Badge>
+                                      )}
+                                    </Text>
+                                  </Td>
+                                  <Td>
+                                    <Text fontSize="sm" noOfLines={1}>
+                                      {game.winner ? (
+                                        <Badge colorScheme="green">
+                                          {game.winner === "X"
+                                            ? game.playerX.name
+                                            : game.playerO.name}
+                                        </Badge>
+                                      ) : (
+                                        <Badge colorScheme="gray">Empate</Badge>
+                                      )}
+                                    </Text>
+                                  </Td>
+                                  <Td>
+                                    <Text fontSize="sm" noOfLines={1}>
+                                      {game.vsComputer ? (
+                                        <>vs IA ({game.difficulty})</>
+                                      ) : (
+                                        "vs Jugador"
+                                      )}
+                                    </Text>
+                                  </Td>
+                                </Tr>
+                              ))}
+                          </Tbody>
+                        </Table>
+                      </TableContainer>
+
+                      <HStack justify="center" spacing={4}>
+                        <IconButton
+                          aria-label="Página anterior"
+                          icon={<ChevronLeftIcon />}
+                          onClick={() =>
+                            setCurrentPage((prev) => Math.max(1, prev - 1))
+                          }
+                          isDisabled={currentPage === 1}
+                          size="sm"
+                        />
+
+                        <Text fontSize="sm">
+                          Página {currentPage} de{" "}
+                          {Math.ceil(stats.games.length / itemsPerPage)}
+                        </Text>
+
+                        <IconButton
+                          aria-label="Página siguiente"
+                          icon={<ChevronRightIcon />}
+                          onClick={() =>
+                            setCurrentPage((prev) =>
+                              Math.min(
+                                Math.ceil(stats.games.length / itemsPerPage),
+                                prev + 1
+                              )
+                            )
+                          }
+                          isDisabled={
+                            currentPage ===
+                            Math.ceil(stats.games.length / itemsPerPage)
+                          }
+                          size="sm"
+                        />
+
+                        <HStack spacing={2}>
+                          <Text fontSize="sm">Mostrar:</Text>
+                          <NumberInput
+                            size="sm"
+                            maxW={20}
+                            min={5}
+                            max={20}
+                            value={itemsPerPage}
+                            onChange={(valueString) => {
+                              const value = parseInt(valueString);
+                              setItemsPerPage(value);
+                              setCurrentPage(1);
+                            }}
+                          >
+                            <NumberInputField />
+                            <NumberInputStepper>
+                              <NumberIncrementStepper />
+                              <NumberDecrementStepper />
+                            </NumberInputStepper>
+                          </NumberInput>
+                        </HStack>
+                      </HStack>
+                    </VStack>
+                  </TabPanel>
+                </TabPanels>
+              </Tabs>
+            ) : (
+              <Text>No hay estadísticas disponibles</Text>
+            )}
+          </ModalBody>
+          <ModalFooter>
+            <Button colorScheme="blue" onClick={onStatsClose}>
+              Cerrar
             </Button>
           </ModalFooter>
         </ModalContent>

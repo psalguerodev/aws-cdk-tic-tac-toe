@@ -1,5 +1,4 @@
 import * as path from 'path';
-import { CfnOutput } from 'aws-cdk-lib';
 import { Distribution, ViewerProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront';
 import { S3BucketOrigin } from 'aws-cdk-lib/aws-cloudfront-origins';
 import { BlockPublicAccess, Bucket, HttpMethods } from 'aws-cdk-lib/aws-s3';
@@ -67,16 +66,5 @@ export class WebsiteConstruct extends Construct {
     // Guardar las propiedades
     this.websiteUrl = this.bucket.bucketWebsiteUrl;
     this.bucketName = this.bucket.bucketName;
-
-    // Outputs
-    new CfnOutput(this, 'CloudFrontURL', {
-      value: this.distribution.distributionDomainName,
-      description: 'URL de CloudFront',
-    });
-
-    new CfnOutput(this, 'BucketName', {
-      value: this.bucketName,
-      description: 'Nombre del bucket S3',
-    });
   }
 }

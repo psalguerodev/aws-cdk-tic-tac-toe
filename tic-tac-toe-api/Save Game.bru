@@ -1,0 +1,28 @@
+meta {
+  name: Save Game
+  type: http
+  seq: 3
+}
+
+post {
+  url: https://8lrj00xq0j.execute-api.us-east-1.amazonaws.com/prod/games
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+      "playerX": {
+        "name": "Jugador 1",
+        "wins": 2
+      },
+      "playerO": {
+        "name": "Computadora",
+        "wins": 1
+      },
+      "winner": "X",
+      "date": "2023-11-14T15:30:00Z",
+      "vsComputer": true,
+      "difficulty": "medio"
+    }
+}
