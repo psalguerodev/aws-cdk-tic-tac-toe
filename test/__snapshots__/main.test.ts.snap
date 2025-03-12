@@ -1,0 +1,224 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`MyStack snapshot del stack 1`] = `
+{
+  "Outputs": {
+    "BucketNameStack": {
+      "Description": "Nombre del bucket S3 (Stack)",
+      "Value": {
+        "Ref": "WebsiteConstructtestwebsitebucket05EDC685",
+      },
+    },
+    "WebsiteConstructBucketName38C8193D": {
+      "Description": "Nombre del bucket S3",
+      "Value": {
+        "Ref": "WebsiteConstructtestwebsitebucket05EDC685",
+      },
+    },
+    "WebsiteConstructCloudFrontURLDC3C8449": {
+      "Description": "URL de CloudFront",
+      "Value": {
+        "Fn::GetAtt": [
+          "WebsiteConstructDistribution565587D6",
+          "DomainName",
+        ],
+      },
+    },
+    "WebsiteURLStack": {
+      "Description": "URL del sitio web (Stack)",
+      "Value": {
+        "Fn::GetAtt": [
+          "WebsiteConstructtestwebsitebucket05EDC685",
+          "WebsiteURL",
+        ],
+      },
+    },
+  },
+  "Parameters": {
+    "BootstrapVersion": {
+      "Default": "/cdk-bootstrap/hnb659fds/version",
+      "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]",
+      "Type": "AWS::SSM::Parameter::Value<String>",
+    },
+  },
+  "Resources": {
+    "WebsiteConstructDistribution565587D6": {
+      "Properties": {
+        "DistributionConfig": {
+          "CustomErrorResponses": [
+            {
+              "ErrorCode": 403,
+              "ResponseCode": 200,
+              "ResponsePagePath": "/index.html",
+            },
+            {
+              "ErrorCode": 404,
+              "ResponseCode": 200,
+              "ResponsePagePath": "/index.html",
+            },
+          ],
+          "DefaultCacheBehavior": {
+            "CachePolicyId": "658327ea-f89d-4fab-a63d-7e88639e58f6",
+            "Compress": true,
+            "TargetOriginId": "testWebsiteConstructDistributionOrigin157C8D351",
+            "ViewerProtocolPolicy": "redirect-to-https",
+          },
+          "DefaultRootObject": "index.html",
+          "Enabled": true,
+          "HttpVersion": "http2",
+          "IPV6Enabled": true,
+          "Origins": [
+            {
+              "DomainName": {
+                "Fn::GetAtt": [
+                  "WebsiteConstructtestwebsitebucket05EDC685",
+                  "RegionalDomainName",
+                ],
+              },
+              "Id": "testWebsiteConstructDistributionOrigin157C8D351",
+              "OriginAccessControlId": {
+                "Fn::GetAtt": [
+                  "WebsiteConstructDistributionOrigin1S3OriginAccessControl59E76E0A",
+                  "Id",
+                ],
+              },
+              "S3OriginConfig": {
+                "OriginAccessIdentity": "",
+              },
+            },
+          ],
+        },
+      },
+      "Type": "AWS::CloudFront::Distribution",
+    },
+    "WebsiteConstructDistributionOrigin1S3OriginAccessControl59E76E0A": {
+      "Properties": {
+        "OriginAccessControlConfig": {
+          "Name": "testWebsiteConstructDistribuOrigin1S3OriginAccessControl472B02BE",
+          "OriginAccessControlOriginType": "s3",
+          "SigningBehavior": "always",
+          "SigningProtocol": "sigv4",
+        },
+      },
+      "Type": "AWS::CloudFront::OriginAccessControl",
+    },
+    "WebsiteConstructtestwebsitebucket05EDC685": {
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "BucketName": "test-website-bucket",
+        "CorsConfiguration": {
+          "CorsRules": [
+            {
+              "AllowedHeaders": [
+                "*",
+              ],
+              "AllowedMethods": [
+                "GET",
+              ],
+              "AllowedOrigins": [
+                "*",
+              ],
+            },
+          ],
+        },
+        "PublicAccessBlockConfiguration": {
+          "BlockPublicAcls": true,
+          "BlockPublicPolicy": true,
+          "IgnorePublicAcls": true,
+          "RestrictPublicBuckets": true,
+        },
+        "WebsiteConfiguration": {
+          "ErrorDocument": "index.html",
+          "IndexDocument": "index.html",
+        },
+      },
+      "Type": "AWS::S3::Bucket",
+      "UpdateReplacePolicy": "Retain",
+    },
+    "WebsiteConstructtestwebsitebucketPolicy36C312AB": {
+      "Properties": {
+        "Bucket": {
+          "Ref": "WebsiteConstructtestwebsitebucket05EDC685",
+        },
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "s3:GetObject",
+              "Condition": {
+                "StringEquals": {
+                  "AWS:SourceArn": {
+                    "Fn::Join": [
+                      "",
+                      [
+                        "arn:",
+                        {
+                          "Ref": "AWS::Partition",
+                        },
+                        ":cloudfront::",
+                        {
+                          "Ref": "AWS::AccountId",
+                        },
+                        ":distribution/",
+                        {
+                          "Ref": "WebsiteConstructDistribution565587D6",
+                        },
+                      ],
+                    ],
+                  },
+                },
+              },
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "cloudfront.amazonaws.com",
+              },
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    {
+                      "Fn::GetAtt": [
+                        "WebsiteConstructtestwebsitebucket05EDC685",
+                        "Arn",
+                      ],
+                    },
+                    "/*",
+                  ],
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+      },
+      "Type": "AWS::S3::BucketPolicy",
+    },
+  },
+  "Rules": {
+    "CheckBootstrapVersion": {
+      "Assertions": [
+        {
+          "Assert": {
+            "Fn::Not": [
+              {
+                "Fn::Contains": [
+                  [
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                    "5",
+                  ],
+                  {
+                    "Ref": "BootstrapVersion",
+                  },
+                ],
+              },
+            ],
+          },
+          "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI.",
+        },
+      ],
+    },
+  },
+}
+`;
