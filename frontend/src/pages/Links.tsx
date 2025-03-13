@@ -43,6 +43,12 @@ interface Link {
   createdAt: number;
 }
 
+interface LinksResponse {
+  links: Link[];
+  lastEvaluatedKey: string | null;
+  count: number;
+}
+
 const ITEMS_PER_PAGE = 12;
 const MAX_PATH_LENGTH = 40;
 
@@ -52,7 +58,8 @@ const Links = () => {
   const [links, setLinks] = useState<Link[]>([]);
   const [newUrl, setNewUrl] = useState("");
   const [editingLink, setEditingLink] = useState<Link | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [lastEvaluatedKey, setLastEvaluatedKey] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -66,13 +73,28 @@ const Links = () => {
   }, []);
 
   // Cargar enlaces desde la API al iniciar
-  const fetchLinks = async () => {
+  const fetchLinks = async (nextKey?: string) => {
     try {
       setIsLoading(true);
-      const response = await fetch(`${API_URL}/links`);
+      const url = new URL(`${API_URL}/links`);
+      url.searchParams.append("limit", ITEMS_PER_PAGE.toString());
+      if (nextKey) {
+        url.searchParams.append("lastKey", nextKey);
+      }
+
+      const response = await fetch(url.toString());
       if (!response.ok) throw new Error("Error al obtener los enlaces");
-      const data = await response.json();
-      setLinks(data.links || []);
+
+      const data: LinksResponse = await response.json();
+
+      if (nextKey) {
+        setLinks((prev) => [...prev, ...data.links]);
+      } else {
+        setLinks(data.links);
+      }
+
+      setLastEvaluatedKey(data.lastEvaluatedKey);
+      setHasMore(!!data.lastEvaluatedKey);
     } catch (error) {
       console.error("Error al cargar los enlaces:", error);
       toast({
@@ -83,8 +105,13 @@ const Links = () => {
       });
     } finally {
       setIsLoading(false);
-      // Focus después de cargar los enlaces
       inputRef.current?.focus();
+    }
+  };
+
+  const loadMore = () => {
+    if (lastEvaluatedKey && !isLoading) {
+      fetchLinks(lastEvaluatedKey);
     }
   };
 
@@ -168,16 +195,14 @@ const Links = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify([newLink]), // Enviamos como array porque el backend espera un array
+        body: JSON.stringify([newLink]),
       });
 
       if (!response.ok) throw new Error("Error al guardar el enlace");
 
-      // Recargar los enlaces después de guardar
-      await fetchLinks();
-
+      // Recargar la primera página para mantener el orden correcto
+      fetchLinks();
       setNewUrl("");
-      setCurrentPage(1);
       inputRef.current?.focus();
 
       toast({
@@ -213,8 +238,8 @@ const Links = () => {
 
       if (!response.ok) throw new Error("Error al eliminar el enlace");
 
-      // Recargar los enlaces después de eliminar
-      await fetchLinks();
+      // En lugar de recargar, eliminamos el enlace del estado local
+      setLinks((prevLinks) => prevLinks.filter((link) => link.id !== id));
 
       toast({
         title: "Enlace eliminado",
@@ -279,8 +304,21 @@ const Links = () => {
 
       if (!response.ok) throw new Error("Error al actualizar el enlace");
 
-      // Recargar los enlaces después de actualizar
-      await fetchLinks();
+      // En lugar de recargar, actualizamos el enlace en el estado local
+      setLinks((prevLinks) =>
+        prevLinks.map((link) =>
+          link.id === editingLink.id
+            ? {
+                ...link,
+                url: editingLink.url.trim(),
+                name: new URL(editingLink.url.trim()).hostname.replace(
+                  "www.",
+                  ""
+                ),
+              }
+            : link
+        )
+      );
 
       onClose();
       inputRef.current?.focus();
@@ -321,11 +359,6 @@ const Links = () => {
       });
     }
   };
-
-  const totalPages = Math.ceil(links.length / ITEMS_PER_PAGE);
-  const paginatedLinks = links
-    .sort((a, b) => b.createdAt - a.createdAt)
-    .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   return (
     <Flex w="100vw" minH="100vh" align="center" justify="center" p={4}>
@@ -393,118 +426,114 @@ const Links = () => {
         >
           <VStack spacing={1} align="stretch">
             <AnimatePresence mode="wait" initial={false}>
-              {isLoading && paginatedLinks.length === 0 ? (
+              {isLoading && links.length === 0 ? (
                 <Flex justify="center" align="center" h="100px">
                   <Spinner size="xl" color="blue.500" />
                 </Flex>
-              ) : paginatedLinks.length === 0 ? (
+              ) : links.length === 0 ? (
                 <Text textAlign="center" color="gray.500" fontSize="sm">
                   No hay enlaces guardados
                 </Text>
               ) : (
-                paginatedLinks.map((link) => (
-                  <MotionHStack
-                    key={link.id}
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -5 }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 200,
-                      damping: 25,
-                      mass: 0.8,
-                    }}
-                    layout
-                    p={2}
-                    borderRadius="md"
-                    _hover={{ bg: "gray.50" }}
-                    justify="space-between"
-                  >
-                    <HStack spacing={3} flex={1} minW={0}>
-                      <LinkIcon color="gray.400" flexShrink={0} />
-                      <Box minW={0}>
-                        <Text fontSize="sm" fontWeight="medium" isTruncated>
-                          {link.name}
-                        </Text>
-                        {getPathFromUrl(link.url) && (
-                          <Text fontSize="xs" color="gray.500" isTruncated>
-                            {getPathFromUrl(link.url)}
+                <>
+                  {links.map((link) => (
+                    <MotionHStack
+                      key={link.id}
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -5 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 200,
+                        damping: 25,
+                        mass: 0.8,
+                      }}
+                      layout
+                      p={2}
+                      borderRadius="md"
+                      _hover={{ bg: "gray.50" }}
+                      justify="space-between"
+                    >
+                      <HStack spacing={3} flex={1} minW={0}>
+                        <LinkIcon color="gray.400" flexShrink={0} />
+                        <Box minW={0}>
+                          <Text fontSize="sm" fontWeight="medium" isTruncated>
+                            {link.name}
                           </Text>
-                        )}
-                      </Box>
-                    </HStack>
-                    <HStack spacing={1} flexShrink={0}>
-                      <Tooltip label="Copiar enlace" placement="top">
-                        <IconButton
-                          icon={
-                            copiedId === link.id ? <CheckIcon /> : <CopyIcon />
-                          }
-                          aria-label="Copiar enlace"
-                          size="xs"
-                          variant="ghost"
-                          color={copiedId === link.id ? "green.500" : undefined}
-                          onClick={() => handleCopyLink(link.url, link.id)}
-                        />
-                      </Tooltip>
-                      <Tooltip label="Abrir enlace" placement="top">
-                        <IconButton
-                          icon={<ExternalLinkIcon />}
-                          aria-label="Abrir enlace"
-                          size="xs"
-                          variant="ghost"
-                          onClick={() => window.open(link.url, "_blank")}
-                        />
-                      </Tooltip>
-                      <Tooltip label="Editar" placement="top">
-                        <IconButton
-                          icon={<EditIcon />}
-                          aria-label="Editar enlace"
-                          size="xs"
-                          variant="ghost"
-                          onClick={() => handleEditLink(link)}
-                          isDisabled={isLoading}
-                        />
-                      </Tooltip>
-                      <Tooltip label="Eliminar" placement="top">
-                        <IconButton
-                          icon={<DeleteIcon />}
-                          aria-label="Eliminar enlace"
-                          size="xs"
-                          variant="ghost"
-                          onClick={() => handleDeleteLink(link.id)}
-                          isDisabled={isLoading}
-                        />
-                      </Tooltip>
-                    </HStack>
-                  </MotionHStack>
-                ))
+                          {getPathFromUrl(link.url) && (
+                            <Text fontSize="xs" color="gray.500" isTruncated>
+                              {getPathFromUrl(link.url)}
+                            </Text>
+                          )}
+                        </Box>
+                      </HStack>
+                      <HStack spacing={1} flexShrink={0}>
+                        <Tooltip label="Copiar enlace" placement="top">
+                          <IconButton
+                            icon={
+                              copiedId === link.id ? (
+                                <CheckIcon />
+                              ) : (
+                                <CopyIcon />
+                              )
+                            }
+                            aria-label="Copiar enlace"
+                            size="xs"
+                            variant="ghost"
+                            color={
+                              copiedId === link.id ? "green.500" : undefined
+                            }
+                            onClick={() => handleCopyLink(link.url, link.id)}
+                          />
+                        </Tooltip>
+                        <Tooltip label="Abrir enlace" placement="top">
+                          <IconButton
+                            icon={<ExternalLinkIcon />}
+                            aria-label="Abrir enlace"
+                            size="xs"
+                            variant="ghost"
+                            onClick={() => window.open(link.url, "_blank")}
+                          />
+                        </Tooltip>
+                        <Tooltip label="Editar" placement="top">
+                          <IconButton
+                            icon={<EditIcon />}
+                            aria-label="Editar enlace"
+                            size="xs"
+                            variant="ghost"
+                            onClick={() => handleEditLink(link)}
+                            isDisabled={isLoading}
+                          />
+                        </Tooltip>
+                        <Tooltip label="Eliminar" placement="top">
+                          <IconButton
+                            icon={<DeleteIcon />}
+                            aria-label="Eliminar enlace"
+                            size="xs"
+                            variant="ghost"
+                            onClick={() => handleDeleteLink(link.id)}
+                            isDisabled={isLoading}
+                          />
+                        </Tooltip>
+                      </HStack>
+                    </MotionHStack>
+                  ))}
+                  {hasMore && (
+                    <Button
+                      onClick={loadMore}
+                      isLoading={isLoading}
+                      variant="ghost"
+                      size="sm"
+                      my={2}
+                    >
+                      Cargar más enlaces
+                    </Button>
+                  )}
+                </>
               )}
             </AnimatePresence>
           </VStack>
         </CardBody>
-
-        {totalPages > 1 && (
-          <HStack
-            justify="center"
-            py={2}
-            borderTop="1px"
-            borderColor="gray.100"
-            spacing={1}
-          >
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <IconButton
-                key={page}
-                size="xs"
-                variant={currentPage === page ? "solid" : "ghost"}
-                colorScheme={currentPage === page ? "blue" : "gray"}
-                onClick={() => setCurrentPage(page)}
-                icon={<Text fontSize="xs">{page}</Text>}
-                aria-label={`Página ${page}`}
-                isDisabled={isLoading}
-              />
-            ))}
-          </HStack>
-        )}
       </Card>
 
       {/* Modal de edición */}

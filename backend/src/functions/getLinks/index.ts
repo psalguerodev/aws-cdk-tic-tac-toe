@@ -42,9 +42,13 @@ export const handler = async (
       TableName: TABLE_NAME,
       Limit: limit,
       ExclusiveStartKey: lastEvaluatedKey,
+      ScanIndexForward: false, // Para orden descendente
     };
 
     const result = await dynamoDB.scan(scanParams).promise();
+
+    // Ordenar los resultados por createdAt en orden descendente
+    const sortedLinks = result.Items?.sort((a, b) => b.createdAt - a.createdAt);
 
     return {
       statusCode: 200,
@@ -54,7 +58,7 @@ export const handler = async (
         "Access-Control-Allow-Credentials": true,
       },
       body: JSON.stringify({
-        links: result.Items,
+        links: sortedLinks,
         lastEvaluatedKey: result.LastEvaluatedKey
           ? encodeURIComponent(JSON.stringify(result.LastEvaluatedKey))
           : null,
