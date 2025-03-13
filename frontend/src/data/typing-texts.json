@@ -1,0 +1,44 @@
+{
+  "categories": {
+    "texto": {
+      "name": "Texto en español",
+      "texts": [
+        "el gato negro saltó sobre la mesa rápidamente mientras el sol brillaba",
+        "las nubes grises cubrían el cielo azul durante aquella tarde lluviosa",
+        "los pájaros cantaban melodías suaves en el jardín florido primaveral",
+        "el viento soplaba fuerte moviendo las hojas de los árboles antiguos",
+        "la música sonaba distante mientras todos bailaban alegremente juntos"
+      ]
+    },
+    "javascript": {
+      "name": "JavaScript",
+      "texts": [
+        "const handleClick = (event) => { event.preventDefault(); setIsLoading(true); }",
+        "function calculateTotal(items) { return items.reduce((sum, item) => sum + item.price, 0); }",
+        "const users = data.map(user => ({ ...user, fullName: `${user.firstName} ${user.lastName}` }));",
+        "useEffect(() => { localStorage.setItem('preferences', JSON.stringify(prefs)); }, [prefs]);",
+        "const debounce = (fn, delay) => { let timeout; return (...args) => { clearTimeout(timeout); timeout = setTimeout(() => fn(...args), delay); }; };"
+      ]
+    },
+    "python": {
+      "name": "Python",
+      "texts": [
+        "def calculate_average(numbers): return sum(numbers) / len(numbers) if numbers else 0",
+        "with open('data.txt', 'r') as file: content = [line.strip() for line in file.readlines()]",
+        "class User: def __init__(self, name, age): self.name = name; self.age = age",
+        "from collections import defaultdict; word_count = defaultdict(int); word_count[word] += 1",
+        "try: result = perform_operation(); except Exception as e: logger.error(f'Error: {str(e)}')"
+      ]
+    },
+    "sql": {
+      "name": "SQL",
+      "texts": [
+        "SELECT users.name, COUNT(orders.id) FROM users LEFT JOIN orders ON users.id = orders.user_id GROUP BY users.id",
+        "INSERT INTO products (name, price, category_id) VALUES ('New Product', 29.99, 1) RETURNING id",
+        "UPDATE customers SET last_login = CURRENT_TIMESTAMP WHERE id IN (SELECT customer_id FROM active_sessions)",
+        "CREATE TABLE users (id SERIAL PRIMARY KEY, email VARCHAR(255) UNIQUE NOT NULL, created_at TIMESTAMP DEFAULT NOW())",
+        "DELETE FROM cart_items WHERE created_at < NOW() - INTERVAL '24 hours' AND status = 'abandoned'"
+      ]
+    }
+  }
+}

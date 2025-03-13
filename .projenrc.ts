@@ -1,8 +1,8 @@
-import { awscdk } from "projen";
+import { awscdk } from 'projen';
 const project = new awscdk.AwsCdkTypeScriptApp({
-  cdkVersion: "2.182.0",
-  defaultReleaseBranch: "main",
-  name: "cdk-projen-io-ts",
+  cdkVersion: '2.182.0',
+  defaultReleaseBranch: 'main',
+  name: 'cdk-projen-io-ts',
   projenrcTs: true,
   github: false,
 

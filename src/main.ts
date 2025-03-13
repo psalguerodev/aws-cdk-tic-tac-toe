@@ -10,6 +10,7 @@ export class MyStack extends Stack {
     // Crear el backend con API Gateway, Lambda y DynamoDB
     const backend = new BackendConstruct(this, "BackendConstruct", {
       tableName: `${id}-games-table`,
+      linksTableName: `${id}-links-table`,
     });
 
     // Crear el sitio web con S3 y CloudFront
@@ -39,9 +40,14 @@ export class MyStack extends Stack {
       description: "URL de la API Gateway",
     });
 
-    new CfnOutput(this, "TableNameStack", {
+    new CfnOutput(this, "GamesTableNameStack", {
       value: backend.table.tableName,
-      description: "Nombre de la tabla DynamoDB",
+      description: "Nombre de la tabla DynamoDB de juegos",
+    });
+
+    new CfnOutput(this, "LinksTableNameStack", {
+      value: backend.linksTable.tableName,
+      description: "Nombre de la tabla DynamoDB de enlaces",
     });
   }
 }
